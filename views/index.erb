@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <title>Two Way Data Binding</title>
+    <script src="//code.jquery.com/jquery-1.11.0.min.js"></script>
+    <script src="pubsub.js"></script>
+    <script>
+      !function($) {
+        var data = {},
+          $content,
+          $name;
+
+        var init = function() {
+          $content = $('#content');
+          if (!$content.length) { return }
+          $.subscribe('name:change', setName);
+          $content.find('input').on('keyup change', getName);
+          $content.find('button').on('click', resetName);
+          resetName();
+        };
+
+        var set = function(key, newValue) {
+          var oldValue = get(key);
+          if (oldValue == newValue) { return }
+          data[key] = newValue;
+          $.publish(key + ':change', [newValue, oldValue]);
+        };
+
+        var get = function(key) {
+          return data[key];
+        }
+
+        var setName = function(e, name, oldName, caller) {
+          console.log('Name changed to ' + name);
+          $content.find('#name').text(name);
+          $content.find('input').val(name);
+        };
+
+        var getName = function() {
+          var name = $(this).val();
+          set('name', name);
+        };
+
+        var resetName = function() {
+          set('name', 'Joe');
+        }
+
+        $(init);
+      }(jQuery);
+    </script>
+  </head>
+  <body>
+    <h2>Two Way Data Binding</h2>
+    <div id="content">
+      <input type="text">
+      <p>Hello, <span id="name"></span>
+      <div><button>Set name to Joe</button></div>
+    </div>
+  </body>
+</html>
